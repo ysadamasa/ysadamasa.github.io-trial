@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地域見守り隊 適性タイプ診断</title>
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f2f5f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.yes { background: #4CAF50; color: white; }
+.no { background: #f44336; color: white; }
+.start-btn, .retry-btn { background: #2196F3; color: white; }
+
+.progress {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #666;
+}
+
+img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="container" id="app"></div>
+
+<script>
+const types = {
+  leader: {
+    name: "リーダー型",
+    desc: "周囲をまとめる力があり、状況判断にも優れています。地域の見守り活動では中心的な役割を担い、チームを引っ張る存在です。困っている人を見つけると率先して動き、周囲を巻き込んで課題解決に導く力があります。",
+    img: "leader.jpg"
+  },
+  guardian: {
+    name: "ガーディアン型",
+    desc: "責任感が強く、継続的に見守ることが得意なタイプです。地域の安全を守る意識が高く、日々の積み重ねを大切にします。目立たなくても確実に役割を果たし、安心感を与える存在として活躍できます。",
+    img: "guardian.jpg"
+  },
+  active: {
+    name: "アクティブ型",
+    desc: "フットワークが軽く、行動力に優れています。地域イベントや巡回など、体を動かす活動に向いています。新しいことにも積極的に挑戦し、現場での対応力が高いのが特徴です。",
+    img: "active.jpg"
+  },
+  supporter: {
+    name: "サポーター型",
+    desc: "人の話をよく聞き、支えることが得意なタイプです。困っている人に寄り添い、安心感を与えることができます。チームの裏方としても重要な役割を担い、周囲の活動を円滑に進めます。",
+    img: "supporter.jpg"
+  },
+  planner: {
+    name: "プランナー型",
+    desc: "計画を立てるのが得意で、全体を見渡す力があります。見守り活動のスケジュール管理や仕組みづくりに向いています。効率的で無理のない活動を支える重要な存在です。",
+    img: "planner.jpg"
+  },
+  creator: {
+    name: "クリエイター型",
+    desc: "発想力が豊かで、新しいアイデアを生み出すのが得意です。地域の見守り活動に新しい視点を取り入れ、広報や企画などで活躍できます。人を惹きつける工夫ができるタイプです。",
+    img: "creator.jpg"
+  }
+};
+
+const questions = [
+  { text: "人をまとめる役割を任されることが多い", yes: "leader", no: "supporter" },
+  { text: "コツコツと継続することが得意だ", yes: "guardian", no: "active" },
+  { text: "体を動かす活動が好きだ", yes: "active", no: "planner" },
+  { text: "人の相談に乗ることが多い", yes: "supporter", no: "leader" },
+  { text: "計画を立てるのが好きだ", yes: "planner", no: "creator" },
+  { text: "新しいアイデアを考えるのが好きだ", yes: "creator", no: "guardian" }
+];
+
+let current = 0;
+let scores = {};
+
+function initScores() {
+  scores = {};
+  for (let key in types) scores[key] = 0;
+}
+
+function renderStart() {
+  document.getElementById("app").innerHTML = `
+    <h1>地域見守り隊 適性タイプ診断（仮）</h1>
+    <p>6つの質問に答えるだけで、あなたに合った見守りタイプが分かります。</p>
+    <button class="start-btn" onclick="start()">診断をはじめる</button>
+  `;
+}
+
+function start() {
+  current = 0;
+  initScores();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  document.getElementById("app").innerHTML = `
+    <div class="progress">質問 ${current + 1} / 6</div>
+    <h1>${q.text}</h1>
+    <button class="yes" onclick="answer(true)">はい</button>
+    <button class="no" onclick="answer(false)">いいえ</button>
+  `;
+}
+
+function answer(isYes) {
+  const q = questions[current];
+  const type = isYes ? q.yes : q.no;
+  scores[type]++;
+
+  current++;
+  if (current < questions.length) {
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  let maxType = null;
+  let maxScore = -1;
+
+  for (let key in scores) {
+    if (scores[key] > maxScore) {
+      maxScore = scores[key];
+      maxType = key;
+    }
+  }
+
+  const result = types[maxType];
+
+  document.getElementById("app").innerHTML = `
+    <h1>${result.name}</h1>
+    <img src="${result.img}" alt="">
+    <p>${result.desc}</p>
+    <button class="retry-btn" onclick="renderStart()">もう一度診断する</button>
+  `;
+}
+
+renderStart();
+</script>
+
+</body>
+</html>
